@@ -30,7 +30,7 @@ export default function LogPage() {
       setDates(allDates)
       setStats(statsRes)
     } catch (e) {
-      setError('Cannot connect to backend. Is it running on localhost:8000?')
+      setError('Cannot connect to backend. Check your connection.')
     }
     setLoading(false)
   }, [day])

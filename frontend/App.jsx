@@ -34,7 +34,7 @@ export default function App() {
 
         <div className="sidebar-footer">
           <div className="footer-dot" />
-          <span>backend: localhost:8000</span>
+          <span>backend: {import.meta.env.VITE_API_URL}</span>
         </div>
       </aside>
 
