@@ -25,3 +25,6 @@ echo =============================================
 echo  Open: http://localhost:5173
 echo =============================================
 pause
+
+@REM cd frontend
+@REM npm install
