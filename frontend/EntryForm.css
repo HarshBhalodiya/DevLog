@@ -1,0 +1,21 @@
+.cat-grid {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.cat-btn {
+  background: transparent; border: 1px solid var(--border);
+  color: var(--text3); padding: 5px 10px; border-radius: 6px;
+  font-size: 11px; transition: all 0.15s; cursor: pointer;
+  font-family: var(--font-mono);
+}
+.cat-btn:hover { border-color: var(--border2); color: var(--text2); }
+
+.form-row { display: flex; gap: 14px; }
+
+.toggle-row { display: flex; gap: 6px; }
+.toggle-btn {
+  flex: 1; background: transparent; border: 1px solid var(--border);
+  color: var(--text3); padding: 7px 8px; border-radius: 6px;
+  font-size: 11px; transition: all 0.15s; cursor: pointer;
+  font-family: var(--font-mono); text-align: center;
+}
+.toggle-btn:hover { border-color: var(--border2); color: var(--text2); }
