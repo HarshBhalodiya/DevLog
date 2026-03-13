@@ -2,7 +2,12 @@ import { useState, useEffect } from 'react'
 import { getLogs, getDates, aiAnalyse } from './client.js'
 import './AnalysePage.css'
 
-function todayStr() { return new Date().toISOString().slice(0, 10) }
+function todayStr() {
+  const d = new Date()
+  return d.getFullYear() + '-' + 
+         String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+         String(d.getDate()).padStart(2, '0')
+}
 
 export default function AnalysePage() {
   const [day, setDay]         = useState(todayStr())
