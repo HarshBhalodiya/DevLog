@@ -8,6 +8,8 @@ __pycache__/
 .env.local
 .env.*.local
 
+# .env.example is intentionally tracked in git — it's the template
+
 # Build
 dist/
 build/

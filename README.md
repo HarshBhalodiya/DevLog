@@ -4,33 +4,46 @@ A full-stack app to track your daily dev work and get AI-powered productivity in
 
 ```
 devlog/
-├── backend/          ← FastAPI Python server
+├── backend/                ← FastAPI Python server
 │   ├── main.py
-│   ├── requirements.txt
-│   └── .env
-└── frontend/         ← React + Vite app
-    ├── src/
-    │   ├── pages/    (LogPage, SummaryPage, AnalysePage, WeeklyPage)
-    │   ├── components/ (LogEntryCard, EntryForm, StatsBar)
-    │   └── api/      (client.js, constants.js)
-    ├── index.html
-    └── package.json
+│   └── requirements.txt
+├── frontend/               ← React + Vite app
+│   ├── src/
+│   │   ├── pages/          (LogPage, SummaryPage, AnalysePage, WeeklyPage)
+│   │   ├── components/     (LogEntryCard, EntryForm, StatsBar)
+│   │   ├── api/            (client.js, constants.js)
+│   │   ├── App.jsx
+│   │   ├── App.css
+│   │   ├── main.jsx
+│   │   └── index.css
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
+├── .env.example             ← Single env template for both backend & frontend
+└── README.md
 ```
 
 ---
 
 ## ⚙️ Setup
 
+### 0. Environment variables (single .env at project root)
+
+Copy the template at the project root:
+```bash
+cp .env.example .env
+# Then edit .env with your keys
+```
+
+This single `.env` file serves both backend and frontend.
+
+---
+
 ### 1. Backend
 
 ```bash
 cd backend
 pip install -r requirements.txt
-```
-
-Create `.env`:
-```
-ANTHROPIC_API_KEY=sk-ant-your-key-here
 ```
 
 Start:
@@ -47,6 +60,10 @@ API docs: http://localhost:8000/docs
 ```bash
 cd frontend
 npm install
+```
+
+Start:
+```bash
 npm run dev
 ```
 

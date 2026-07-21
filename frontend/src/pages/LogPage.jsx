@@ -1,12 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getLogs, getDates, addLog, updateLog, deleteLog, getStats } from '../api/client.js'
-import { CATEGORIES, OUTCOMES, PRIORITIES, getCat, getOutcome } from '../api/constants.js'
+import { CATEGORIES } from '../api/constants.js'
 import LogEntryCard from '../components/LogEntryCard.jsx'
 import EntryForm    from '../components/EntryForm.jsx'
 import StatsBar     from '../components/StatsBar.jsx'
 import './LogPage.css'
 
-function todayStr() { return new Date().toISOString().slice(0, 10) }
+function todayStr() {
+  const d = new Date()
+  return d.getFullYear() + '-' + 
+         String(d.getMonth() + 1).padStart(2, '0') + '-' + 
+         String(d.getDate()).padStart(2, '0')
+}
 
 export default function LogPage() {
   const [entries, setEntries]     = useState([])
@@ -30,7 +35,7 @@ export default function LogPage() {
       setDates(allDates)
       setStats(statsRes)
     } catch (e) {
-      setError('Cannot connect to backend. Is it running on localhost:8000?')
+      setError('Cannot connect to backend. Check your connection.')
     }
     setLoading(false)
   }, [day])

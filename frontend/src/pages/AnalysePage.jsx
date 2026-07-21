@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getLogs, getDates, aiAnalyse } from './client.js'
+import { getLogs, getDates, aiAnalyse } from '../api/client.js'
 import './AnalysePage.css'
 
 function todayStr() {
@@ -36,7 +36,7 @@ export default function AnalysePage() {
       const data = await aiAnalyse(day, entries)
       setAnalysis(data)
     } catch (e) {
-      setError('Analysis failed. Check your ANTHROPIC_API_KEY in backend .env')
+      setError('Analysis failed. Check your GROQ_API_KEY in backend .env')
     }
     setLoading(false)
   }

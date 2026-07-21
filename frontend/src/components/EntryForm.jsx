@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CATEGORIES, OUTCOMES, PRIORITIES } from './constants.js'
+import { CATEGORIES, OUTCOMES, PRIORITIES } from '../api/constants.js'
 import './EntryForm.css'
 
 const BLANK = {

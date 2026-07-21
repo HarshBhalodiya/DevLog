@@ -1,4 +1,4 @@
-import { CATEGORIES, OUTCOMES } from './constants.js'
+import { CATEGORIES, OUTCOMES } from '../api/constants.js'
 import './StatsBar.css'
 
 export default function StatsBar({ stats }) {

@@ -1,4 +1,4 @@
-import { getCat, getOutcome, getPriority } from './constants.js'
+import { getCat, getOutcome, getPriority } from '../api/constants.js'
 import './LogEntryCard.css'
 
 function fmtTime(iso) {

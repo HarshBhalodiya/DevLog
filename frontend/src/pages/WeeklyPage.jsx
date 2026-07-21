@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getDates, getLogs, aiWeekly } from './client.js'
+import { getDates, getLogs, aiWeekly } from '../api/client.js'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import './WeeklyPage.css'
 
@@ -50,7 +50,7 @@ export default function WeeklyPage() {
       const data = await aiWeekly(selected.sort())
       setWeekData(data)
     } catch (e) {
-      setError('Weekly analysis failed. Check your ANTHROPIC_API_KEY')
+      setError('Weekly analysis failed. Check your GROQ_API_KEY')
     }
     setLoading(false)
   }

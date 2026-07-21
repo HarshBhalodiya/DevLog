@@ -2,6 +2,8 @@
 DevLog Backend — FastAPI
 Install: pip install fastapi uvicorn python-dotenv psycopg2-binary
 Run:     uvicorn main:app --reload --port 8000
+
+Uses PostgreSQL (Supabase) when DATABASE_URL is set in .env.
 """
 
 from fastapi import FastAPI, HTTPException
@@ -16,12 +18,15 @@ import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
 
-load_dotenv()
+# Load .env from project root (one directory up from backend/)
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(backend_dir)
+load_dotenv(dotenv_path=os.path.join(project_root, '.env'))
 
 app = FastAPI(title="DevLog API", version="2.0.0")
 
 # CORS configuration
-origins = os.getenv("CORS_ORIGINS", "").split(",")
+origins = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -31,10 +36,20 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ── PostgreSQL connection ─────────────────────────────────────────────────────
+# ── PostgreSQL connection (Supabase) ─────────────────────────────────────────
+
+DATABASE_URL = os.getenv("DATABASE_URL")
+
 
 def get_conn():
-    return psycopg2.connect(os.getenv("DATABASE_URL"), sslmode="require")
+    """Get a PostgreSQL connection to Supabase."""
+    if not DATABASE_URL:
+        raise RuntimeError(
+            "DATABASE_URL not set. Add it to .env:\n"
+            "DATABASE_URL=postgresql://user:pass@host:5432/dbname"
+        )
+    return psycopg2.connect(DATABASE_URL, sslmode="require")
+
 
 def init_db():
     conn = get_conn()
@@ -65,10 +80,12 @@ def init_db():
     cur.close()
     conn.close()
 
+
 # Initialize DB on startup
 init_db()
 
 # ── Models ───────────────────────────────────────────────────────────────────
+
 
 class LogEntry(BaseModel):
     id: Optional[str] = None
@@ -82,25 +99,32 @@ class LogEntry(BaseModel):
     date: Optional[str] = None
     priority: Optional[str] = "medium"
 
+
 class DailyNote(BaseModel):
     date: str
     content: str
+
 
 class AiRequest(BaseModel):
     date: str
     entries: List[dict]
 
+
 # ── Health ───────────────────────────────────────────────────────────────────
+
 
 @app.get("/")
 def root():
-    return {"status": "DevLog API v2 running", "docs": "/docs"}
+    return {"status": "DevLog API v2 running (PostgreSQL)", "docs": "/docs"}
+
 
 @app.get("/health")
 def health():
     return {"ok": True}
 
+
 # ── Log CRUD ─────────────────────────────────────────────────────────────────
+
 
 @app.post("/log", status_code=201)
 def add_log(entry: LogEntry):
@@ -111,17 +135,19 @@ def add_log(entry: LogEntry):
     conn = get_conn()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO logs (id, timestamp, category, title, description, duration_minutes, tags, outcome, date, priority)
+        INSERT INTO logs (id, timestamp, category, title, description,
+        duration_minutes, tags, outcome, date, priority)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (
         entry.id, entry.timestamp, entry.category, entry.title,
         entry.description, entry.duration_minutes,
-        json.dumps(entry.tags), entry.outcome, entry.date, entry.priority
+        json.dumps(entry.tags), entry.outcome, entry.date, entry.priority,
     ))
     conn.commit()
     cur.close()
     conn.close()
-    return {"success": True, "entry": entry.dict()}
+    return {"success": True, "entry": entry.model_dump()}
+
 
 @app.get("/logs")
 def get_logs(day: Optional[str] = None):
@@ -139,6 +165,7 @@ def get_logs(day: Optional[str] = None):
     conn.close()
     return {"logs": logs, "total": len(logs)}
 
+
 @app.get("/logs/dates")
 def get_dates():
     conn = get_conn()
@@ -148,6 +175,7 @@ def get_dates():
     cur.close()
     conn.close()
     return {"dates": dates}
+
 
 @app.get("/logs/stats")
 def get_stats(day: Optional[str] = None):
@@ -176,11 +204,12 @@ def get_stats(day: Optional[str] = None):
         "by_outcome": outcomes,
     }
 
+
 @app.put("/log/{log_id}")
 def update_log(log_id: str, entry: LogEntry):
     conn = get_conn()
     cur = conn.cursor()
-    cur.execute("SELECT id, timestamp, date FROM logs WHERE id = %s", (log_id,))
+    cur.execute("SELECT id FROM logs WHERE id = %s", (log_id,))
     existing = cur.fetchone()
     if not existing:
         cur.close()
@@ -194,13 +223,14 @@ def update_log(log_id: str, entry: LogEntry):
     """, (
         entry.category, entry.title, entry.description,
         entry.duration_minutes, json.dumps(entry.tags),
-        entry.outcome, entry.priority, log_id
+        entry.outcome, entry.priority, log_id,
     ))
     conn.commit()
     cur.close()
     conn.close()
     entry.id = log_id
-    return {"success": True, "entry": entry.dict()}
+    return {"success": True, "entry": entry.model_dump()}
+
 
 @app.delete("/log/{log_id}")
 def delete_log(log_id: str):
@@ -216,7 +246,9 @@ def delete_log(log_id: str):
     conn.close()
     return {"success": True}
 
+
 # ── Daily Notes ──────────────────────────────────────────────────────────────
+
 
 @app.post("/note")
 def save_note(note: DailyNote):
@@ -227,17 +259,18 @@ def save_note(note: DailyNote):
     if existing:
         cur.execute(
             "UPDATE notes SET content=%s, updated_at=%s WHERE date=%s",
-            (note.content, datetime.utcnow().isoformat(), note.date)
+            (note.content, datetime.utcnow().isoformat(), note.date),
         )
     else:
         cur.execute(
             "INSERT INTO notes (date, content, created_at) VALUES (%s, %s, %s)",
-            (note.date, note.content, datetime.utcnow().isoformat())
+            (note.date, note.content, datetime.utcnow().isoformat()),
         )
     conn.commit()
     cur.close()
     conn.close()
     return {"success": True}
+
 
 @app.get("/note/{day}")
 def get_note(day: str):
@@ -249,7 +282,9 @@ def get_note(day: str):
     conn.close()
     return {"note": dict(note) if note else None}
 
+
 # ── AI: End-of-day Summary ───────────────────────────────────────────────────
+
 
 @app.post("/ai/summarise")
 def summarise_day(req: AiRequest):
@@ -280,7 +315,9 @@ Return ONLY valid JSON."""
     raw = _call_groq(api_key, prompt)
     return json.loads(raw)
 
+
 # ── AI: Productivity Analysis ────────────────────────────────────────────────
+
 
 @app.post("/ai/analyse")
 def analyse_day(req: AiRequest):
@@ -315,7 +352,9 @@ Return ONLY valid JSON."""
     raw = _call_groq(api_key, prompt)
     return json.loads(raw)
 
+
 # ── AI: Weekly Trends ────────────────────────────────────────────────────────
+
 
 @app.post("/ai/weekly")
 def weekly_analysis(dates: List[str]):
@@ -366,7 +405,9 @@ Return ONLY valid JSON."""
     raw = _call_groq(api_key, prompt)
     return json.loads(raw)
 
+
 # ── Helpers ───────────────────────────────────────────────────────────────────
+
 
 def _entries_to_text(entries: list) -> str:
     return "\n".join([
@@ -376,19 +417,20 @@ def _entries_to_text(entries: list) -> str:
         for e in entries
     ])
 
+
 def _call_groq(api_key: str, prompt: str) -> str:
     req = urllib.request.Request(
         "https://api.groq.com/openai/v1/chat/completions",
         headers={
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
-            "User-Agent": "DevLog_Backend/1.0"
+            "User-Agent": "DevLog_Backend/1.0",
         },
         data=json.dumps({
             "model": "llama-3.3-70b-versatile",
             "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.2
-        }).encode("utf-8")
+            "temperature": 0.2,
+        }).encode("utf-8"),
     )
     try:
         with urllib.request.urlopen(req) as response:

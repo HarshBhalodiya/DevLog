@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { getLogs, getDates, aiSummarise } from './client.js'
+import { getLogs, getDates, aiSummarise } from '../api/client.js'
 import './SummaryPage.css'
 
 function todayStr() {
@@ -36,7 +36,7 @@ export default function SummaryPage() {
       const data = await aiSummarise(day, entries)
       setSummary(data)
     } catch (e) {
-      setError('AI summary failed. Check your ANTHROPIC_API_KEY in backend .env')
+      setError('AI summary failed. Check your GROQ_API_KEY in backend .env')
     }
     setLoading(false)
   }

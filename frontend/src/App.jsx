@@ -1,8 +1,8 @@
 import { Routes, Route, NavLink } from 'react-router-dom'
-import LogPage      from './LogPage.jsx'
-import SummaryPage  from './SummaryPage.jsx'
-import AnalysePage  from './AnalysePage.jsx'
-import WeeklyPage   from './WeeklyPage.jsx'
+import LogPage      from './pages/LogPage.jsx'
+import SummaryPage  from './pages/SummaryPage.jsx'
+import AnalysePage  from './pages/AnalysePage.jsx'
+import WeeklyPage   from './pages/WeeklyPage.jsx'
 import './App.css'
 
 export default function App() {
